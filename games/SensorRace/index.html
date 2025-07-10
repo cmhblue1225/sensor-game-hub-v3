@@ -334,10 +334,20 @@
             if (startScreen) {
                 startScreen.classList.add('hidden');
             }
-            
-            // 게임 인스턴스가 있으면 시작
-            if (window.game && typeof window.game.start === 'function') {
-                window.game.start();
+
+            if (window.game) {
+                // 멀티플레이어 게임이고 현재 클라이언트가 호스트인 경우
+                if (window.game.gameType === 'multiplayer' && window.game.player.id === window.game.gameState.hostId) {
+                    console.log("Host: Sending start_game event to server.");
+                    window.game.sendMultiplayerEvent('start_game', {});
+                } else if (window.game.gameType === 'single') {
+                    // 싱글플레이어 게임인 경우 바로 시작
+                    console.log("Single player game: Starting directly.");
+                    window.game.start();
+                } else {
+                    // 멀티플레이어 게임이지만 호스트가 아닌 경우, 호스트가 시작하기를 기다림
+                    console.log("Multiplayer game (non-host): Waiting for host to start.");
+                }
             }
         }
         

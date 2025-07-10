@@ -560,6 +560,10 @@ function handleWebSocketMessage(clientId, message) {
         case 'ping':
             handlePing(clientId, message);
             break;
+
+        case 'start_game':
+            handleStartGame(clientId, message);
+            break;
             
         default:
             console.log(`알 수 없는 메시지 타입: ${message.type}`);
@@ -718,6 +722,56 @@ function handleJoinRoom(clientId, message) {
             playerId: result.playerId,
             nickname: message.nickname
         }, clientId);
+    }
+}
+
+function handleStartGame(clientId, message) {
+    // 클라이언트가 속한 룸 찾기
+    let roomId = null;
+    for (const [id, room] of gameRooms.entries()) {
+        if (room.hostClientId === clientId) {
+            roomId = id;
+            break;
+        }
+    }
+
+    if (!roomId) {
+        console.warn(`게임 시작 요청 실패: 클라이언트 ${clientId}는 호스트가 아닙니다.`);
+        const client = clients.get(clientId);
+        if (client) {
+            client.ws.send(JSON.stringify({
+                type: 'game_start_failed',
+                error: '당신은 이 룸의 호스트가 아닙니다.'
+            }));
+        }
+        return;
+    }
+
+    const room = gameRooms.get(roomId);
+    if (!room) {
+        console.error(`게임 시작 요청 실패: 룸 ${roomId}를 찾을 수 없습니다.`);
+        return;
+    }
+
+    // 룸 상태를 'playing'으로 변경
+    room.status = 'playing';
+    console.log(`🎮 룸 ${roomId} 게임 시작!`);
+
+    // 룸의 모든 플레이어에게 게임 시작 이벤트 브로드캐스트
+    broadcastToRoom(roomId, {
+        type: 'game_start',
+        gameId: room.gameId,
+        roomId: roomId
+    });
+
+    // 호스트 클라이언트에게도 시작 알림
+    const hostClient = clients.get(clientId);
+    if (hostClient) {
+        hostClient.ws.send(JSON.stringify({
+            type: 'game_start',
+            gameId: room.gameId,
+            roomId: roomId
+        }));
     }
 }
 
