@@ -1,0 +1,34 @@
+{
+    "id": "my-awesome-game",
+    "name": "🎮 My Awesome Game",
+    "description": "센서를 활용한 멋진 게임입니다. 휴대폰을 기울여서 플레이하세요!",
+    "author": "Your Name",
+    "version": "1.0.0",
+    "category": "action",
+    "difficulty": "medium",
+    "gameType": "single",
+    "icon": "🎮",
+    "sensorTypes": ["orientation", "accelerometer"],
+    "features": ["sensor-control", "single-player", "physics"],
+    "minPlayers": 1,
+    "maxPlayers": 1,
+    "estimatedPlayTime": "5-10분",
+    "controls": {
+        "orientation": "기기 기울이기로 이동",
+        "accelerometer": "흔들기로 특수 액션",
+        "keyboard": "시뮬레이션 모드: WASD + 스페이스바"
+    },
+    "requirements": {
+        "sensors": ["orientation"],
+        "permissions": ["deviceorientation"],
+        "browsers": ["Chrome", "Safari", "Firefox"],
+        "platforms": ["iOS", "Android", "Desktop"]
+    },
+    "screenshots": [
+        "screenshot1.jpg",
+        "screenshot2.jpg"
+    ],
+    "changelog": {
+        "1.0.0": "초기 릴리즈"
+    }
+}

@@ -1,0 +1,68 @@
+services:
+  # 메인 웹 서비스
+  - type: web
+    name: sensor-game-hub-v3
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    
+    # 환경 변수
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HTTPS_PORT
+        value: 10001
+      - key: HOST
+        value: 0.0.0.0
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CLEANUP_INTERVAL
+        value: 300000
+      - key: SESSION_TIMEOUT
+        value: 600000
+      - key: MAX_ROOMS
+        value: 1000
+      - key: MAX_PLAYERS_PER_ROOM
+        value: 8
+      - key: RATE_LIMIT_WINDOW
+        value: 60000
+      - key: RATE_LIMIT_MAX
+        value: 100
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: LOG_LEVEL
+        value: info
+    
+    # 도메인 설정
+    domains:
+      - sensor-game-hub-v3.onrender.com
+    
+    # 헬스체크 설정
+    healthCheckPath: /health
+    
+    # 포트 설정 (Render에서 자동 할당)
+    # HTTP: PORT 환경변수 (보통 10000)
+    # HTTPS: 자동 SSL 인증서 제공
+    
+    # 빌드 설정
+    buildFilter:
+      paths:
+      - server.js
+      - package.json
+      - package-lock.json
+      - core/**
+      - sdk/**
+      - games/**
+      - templates/**
+      - docs/**
+      ignoredPaths:
+      - README.md
+      - .gitignore
+      - .git/**
+    
+    # 로그 수집 설정
+    logStreamName: sensor-hub-logs

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 센서 클라이언트 v3.0</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        /* 헤더 */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 1rem;
+            background: var(--gradient);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 연결 상태 */
+        .connection-status {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* 4자리 세션 코드 섹션 */
+        .session-section {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .session-input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .session-code-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .session-code-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .session-code-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+        
+        /* 멀티플레이어 섹션 */
+        .multiplayer-section {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .room-password-input {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.25rem;
+        }
+        
+        /* 버튼 */
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--primary);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 센서 데이터 표시 */
+        .sensor-data {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .sensor-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .sensor-item {
+            background: var(--card);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .sensor-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .sensor-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+        
+        .sensor-value {
+            text-align: center;
+        }
+        
+        .sensor-value .label {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+        }
+        
+        .sensor-value .value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        /* 시각적 피드백 */
+        .tilt-indicator {
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            margin: 1rem auto;
+            position: relative;
+            background: var(--card);
+        }
+        
+        .tilt-dot {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+        }
+        
+        /* 탭 시스템 */
+        .tab-container {
+            margin-bottom: 2rem;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 오류 메시지 */
+        .error-message {
+            background: var(--error);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        /* 연결된 상태 정보 */
+        .connected-info {
+            background: var(--card);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .info-value {
+            font-weight: 600;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .session-code-input {
+                font-size: 2rem;
+                letter-spacing: 0.3rem;
+            }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>📱 센서 클라이언트 v3.0</h1>
+            <p>PC 게임과 연결하여 센서로 조작하세요</p>
+        </div>
+        
+        <!-- 연결 상태 -->
+        <div class="connection-status">
+            <span class="status-icon" id="statusIcon">🔴</span>
+            <div class="status-text" id="statusText">서버 연결 중...</div>
+            <div class="status-details" id="statusDetails">연결을 설정하고 있습니다</div>
+        </div>
+        
+        <!-- 탭 컨테이너 -->
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="session">🎯 세션 연결</button>
+                <button class="tab-btn" data-tab="multiplayer">🎮 멀티플레이어</button>
+            </div>
+            
+            <!-- 4자리 세션 코드 탭 -->
+            <div class="tab-content active" id="sessionTab">
+                <div class="session-section">
+                    <h2 class="section-title">
+                        <span>🎯</span> 게임 세션 연결
+                    </h2>
+                    
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                        PC에서 게임을 실행하고 표시된 <strong>4자리 코드</strong>를 입력하세요
+                    </p>
+                    
+                    <div class="session-input-group">
+                        <label class="input-label">세션 코드 (4자리):</label>
+                        <input 
+                            type="text" 
+                            id="sessionCodeInput" 
+                            class="session-code-input"
+                            placeholder="0000" 
+                            maxlength="4"
+                            pattern="[0-9]{4}"
+                            inputmode="numeric"
+                        >
+                    </div>
+                    
+                    <button class="btn btn-primary" id="connectSessionBtn" disabled>
+                        <span>🔗</span> 게임에 연결하기
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="calibrateBtn" disabled>
+                        <span>⚖️</span> 센서 보정
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 멀티플레이어 탭 -->
+            <div class="tab-content" id="multiplayerTab">
+                <div class="multiplayer-section">
+                    <h2 class="section-title">
+                        <span>🎮</span> 멀티플레이어 참가
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">닉네임:</label>
+                        <input 
+                            type="text" 
+                            id="nicknameInput" 
+                            class="form-input"
+                            placeholder="닉네임을 입력하세요" 
+                            maxlength="12"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">룸 비밀번호 (4자리):</label>
+                        <input 
+                            type="text" 
+                            id="roomPasswordInput" 
+                            class="form-input room-password-input"
+                            placeholder="0000" 
+                            maxlength="4"
+                            pattern="[0-9]{4}"
+                            inputmode="numeric"
+                        >
+                    </div>
+                    
+                    <button class="btn btn-primary" id="joinRoomBtn" disabled>
+                        <span>🚪</span> 룸 참가하기
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="leaveRoomBtn" disabled>
+                        <span>🚪</span> 룸 나가기
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 연결된 세션/룸 정보 -->
+        <div class="connected-info hidden" id="connectedInfo">
+            <h3 style="margin-bottom: 1rem; text-align: center;">🔗 연결 정보</h3>
+            <div class="info-row">
+                <span class="info-label">상태:</span>
+                <span class="info-value" id="connectionMode">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">게임:</span>
+                <span class="info-value" id="connectedGame">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">코드:</span>
+                <span class="info-value" id="connectedCode">-</span>
+            </div>
+            <div class="info-row" id="playerCountRow" style="display: none;">
+                <span class="info-label">플레이어:</span>
+                <span class="info-value" id="playerCount">-</span>
+            </div>
+        </div>
+        
+        <!-- 센서 데이터 표시 -->
+        <div class="sensor-data">
+            <h3 style="margin-bottom: 1rem; text-align: center;">📊 센서 데이터</h3>
+            
+            <!-- 기울기 시각화 -->
+            <div class="tilt-indicator">
+                <div class="tilt-dot" id="tiltDot"></div>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-item">
+                    <div class="sensor-title">방향 센서 (Orientation)</div>
+                    <div class="sensor-values">
+                        <div class="sensor-value">
+                            <div class="label">Alpha</div>
+                            <div class="value" id="orientationAlpha">0°</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Beta</div>
+                            <div class="value" id="orientationBeta">0°</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Gamma</div>
+                            <div class="value" id="orientationGamma">0°</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sensor-item">
+                    <div class="sensor-title">가속도계 (Accelerometer)</div>
+                    <div class="sensor-values">
+                        <div class="sensor-value">
+                            <div class="label">X</div>
+                            <div class="value" id="accelerometerX">0.0</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Y</div>
+                            <div class="value" id="accelerometerY">0.0</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Z</div>
+                            <div class="value" id="accelerometerZ">0.0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sensor-item">
+                    <div class="sensor-title">자이로스코프 (Gyroscope)</div>
+                    <div class="sensor-values">
+                        <div class="sensor-value">
+                            <div class="label">Alpha</div>
+                            <div class="value" id="gyroscopeAlpha">0.0</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Beta</div>
+                            <div class="value" id="gyroscopeBeta">0.0</div>
+                        </div>
+                        <div class="sensor-value">
+                            <div class="label">Gamma</div>
+                            <div class="value" id="gyroscopeGamma">0.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 에러/성공 메시지 영역 -->
+        <div id="messageArea"></div>
+        
+        <!-- 허브로 돌아가기 -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/" class="btn btn-secondary" style="text-decoration: none;">
+                <span>🏠</span> 허브로 돌아가기
+            </a>
+        </div>
+    </div>
+    
+    <script src="/core/sensor-client.js"></script>
+</body>
+</html>

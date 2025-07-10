@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 센서 게임 허브 v3.0</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* 헤더 */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background: var(--gradient);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 디바이스 감지 */
+        .device-detector {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .device-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .device-option {
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+        
+        .device-option.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .device-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .device-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .device-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* 게임 섹션 */
+        .games-section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .game-type-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--surface);
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+        }
+        
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .game-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .game-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient);
+            border-radius: 0.75rem;
+        }
+        
+        .game-info h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .game-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .game-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .game-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-tag {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .game-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--primary);
+        }
+        
+        /* 멀티플레이어 섹션 */
+        .multiplayer-section {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .room-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .room-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .room-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .room-info h4 {
+            margin-bottom: 0.25rem;
+        }
+        
+        .room-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* 상태 표시 */
+        .status-bar {
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 0.25rem;
+        }
+        
+        .status-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* 모달 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--card);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .device-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .room-actions {
+                flex-direction: column;
+            }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>🎮 센서 게임 허브 v3.0</h1>
+            <p>완벽한 센서 게임 플랫폼 - 세션 매칭과 멀티플레이어 지원</p>
+        </div>
+        
+        <!-- 디바이스 감지 -->
+        <div class="device-detector" id="deviceDetector">
+            <h2>🚀 시작하기</h2>
+            <p>사용 중인 디바이스를 선택하세요</p>
+            
+            <div class="device-options">
+                <div class="device-option" data-device="desktop">
+                    <span class="device-icon">🖥️</span>
+                    <div class="device-title">데스크톱 / PC</div>
+                    <div class="device-desc">게임 플레이 및 룸 생성</div>
+                </div>
+                
+                <div class="device-option" data-device="mobile">
+                    <span class="device-icon">📱</span>
+                    <div class="device-title">모바일 / 태블릿</div>
+                    <div class="device-desc">센서 컨트롤러로 사용</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 데스크톱 인터페이스 -->
+        <div id="desktopInterface" class="hidden">
+            <!-- 상태 바 -->
+            <div class="status-bar">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" id="totalGames">-</div>
+                        <div class="status-label">총 게임</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="activeSessions">-</div>
+                        <div class="status-label">활성 세션</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="activeRooms">-</div>
+                        <div class="status-label">활성 룸</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="connectedClients">-</div>
+                        <div class="status-label">연결된 클라이언트</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 싱글플레이어 게임 -->
+            <div class="games-section">
+                <div class="section-header">
+                    <h2 class="section-title">🎯 싱글플레이어 게임</h2>
+                    <div class="game-type-tabs">
+                        <button class="tab-btn active" data-filter="all">전체</button>
+                        <button class="tab-btn" data-filter="action">액션</button>
+                        <button class="tab-btn" data-filter="puzzle">퍼즐</button>
+                        <button class="tab-btn" data-filter="racing">레이싱</button>
+                    </div>
+                </div>
+                
+                <div class="games-grid" id="singlePlayerGames">
+                    <!-- 게임 카드들이 동적으로 추가됨 -->
+                </div>
+            </div>
+            
+            <!-- 멀티플레이어 게임 -->
+            <div class="multiplayer-section">
+                <div class="section-header">
+                    <h2 class="section-title">🎮 멀티플레이어 게임</h2>
+                    <div class="room-actions">
+                        <button class="btn btn-primary" id="createRoomBtn">
+                            <span>➕</span> 새 룸 생성
+                        </button>
+                        <button class="btn btn-secondary" id="refreshRoomsBtn">
+                            <span>🔄</span> 룸 목록 새로고침
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="games-grid" id="multiPlayerGames">
+                    <!-- 멀티플레이어 게임 카드들이 동적으로 추가됨 -->
+                </div>
+                
+                <h3 style="margin: 2rem 0 1rem 0;">🏠 활성 룸 목록</h3>
+                <div class="room-list" id="roomList">
+                    <!-- 룸 목록이 동적으로 추가됨 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 모바일 인터페이스 -->
+        <div id="mobileInterface" class="hidden">
+            <div class="device-detector">
+                <h2>📱 센서 컨트롤러</h2>
+                <p>PC의 게임과 연결하여 센서로 조작하세요</p>
+                
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="window.location.href='/sensor'">
+                        <span>🎯</span> 센서 클라이언트 시작
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 룸 생성 모달 -->
+    <div class="modal" id="createRoomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏠 새 룸 생성</h3>
+                <button class="modal-close" onclick="closeModal('createRoomModal')">&times;</button>
+            </div>
+            
+            <form id="createRoomForm">
+                <div class="form-group">
+                    <label class="form-label">게임 선택:</label>
+                    <select class="form-input" id="roomGameSelect" required>
+                        <option value="">게임을 선택하세요</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">최대 플레이어 수:</label>
+                    <select class="form-input" id="maxPlayersSelect">
+                        <option value="2">2명</option>
+                        <option value="3">3명</option>
+                        <option value="4" selected>4명</option>
+                        <option value="6">6명</option>
+                        <option value="8">8명</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">룸 이름 (선택사항):</label>
+                    <input type="text" class="form-input" id="roomNameInput" placeholder="룸 이름을 입력하세요">
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createRoomModal')" style="flex: 1;">취소</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">룸 생성</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/core/hub.js"></script>
+</body>
+</html>
