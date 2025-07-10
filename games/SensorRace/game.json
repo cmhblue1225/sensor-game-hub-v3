@@ -1,0 +1,20 @@
+{
+  "id": "sensor-race",
+  "name": "🚀 센서 레이스",
+  "description": "스마트폰 센서를 이용해 친구들과 실시간 레이스를 펼쳐보세요! 가장 먼저 결승선에 도달하는 사람이 승리합니다.",
+  "author": "Gemini CLI",
+  "category": "racing",
+  "difficulty": "medium",
+  "gameType": "multiplayer",
+  "sensorTypes": ["orientation"],
+  "controls": {
+    "tilt": "좌우 기울여 이동, 앞뒤 기울여 가속"
+  },
+  "minPlayers": 2,
+  "maxPlayers": 8,
+  "gameMode": {
+    "name": "Standard Race",
+    "description": "기본 레이스 모드"
+  },
+  "version": "1.0.0"
+}
